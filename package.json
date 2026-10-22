@@ -1,0 +1,18 @@
+{
+  "name": "mca-openhealth-besu-contracts",
+  "version": "1.0.0",
+  "type": "module",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-ignition": "^3.1.9",
+    "@nomicfoundation/hardhat-toolbox-viem": "^5.0.7",
+    "@types/node": "^22.20.5",
+    "forge-std": "github:foundry-rs/forge-std#v1.16.2",
+    "hardhat": "^3.21.0",
+    "typescript": "~6.0.3",
+    "viem": "^2.57.10"
+  },
+  "dependencies": {
+    "@dk1a/solidity-stringutils": "^0.3.3",
+    "@openzeppelin/contracts": "^5.6.1"
+  }
+}
