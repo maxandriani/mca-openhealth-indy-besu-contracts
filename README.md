@@ -1,43 +1,98 @@
-# Sample Hardhat 3 Project (`node:test` and `viem`)
+# MCA OpenHealth Indy Besu Contracts
 
-This project showcases a Hardhat 3 project using the native Node.js test runner (`node:test`) and the `viem` library for Ethereum interactions.
+Contratos Solidity para identidade descentralizada (DID), autorização de contas,
+validação de transações e gerenciamento de recursos AnonCreds em redes compatíveis
+com Ethereum, incluindo Hyperledger Besu.
 
-To learn more about Hardhat 3, please visit the [Getting Started guide](https://hardhat.org/docs/getting-started#getting-started-with-hardhat-3). To share your feedback, join our [Hardhat 3](https://hardhat.org/hardhat3-telegram-group) Telegram group or [open an issue](https://github.com/NomicFoundation/hardhat/issues/new) in our GitHub issue tracker.
+O projeto usa Solidity 0.8.34 e Hardhat 3. Os testes TypeScript usam `node:test`
+e viem.
 
-## Project Overview
+## Requisitos
 
-This example project includes:
+- Node.js compatível com Hardhat 3
+- npm
 
-- A simple Hardhat configuration file.
-- Foundry-compatible Solidity unit tests.
-- TypeScript integration tests using [`node:test`](https://nodejs.org/api/test.html), the new Node.js native test runner, and [`viem`](https://viem.sh/).
-- Examples demonstrating how to connect to different types of networks, including locally simulating OP mainnet.
+## Preparar o ambiente
 
-## Usage
+Na raiz do repositório, instale as dependências e compile os contratos:
 
-### Running Tests
-
-To run all the tests in the project, execute the following command:
-
-```shell
-npx hardhat test
+```sh
+npm ci
+npx hardhat build
 ```
 
-You can also selectively run the Solidity or `node:test` tests:
+A compilação gera os artifacts consumidos pelos testes e pelo gerador de genesis.
 
-```shell
-npx hardhat test solidity
-npx hardhat test nodejs
-```
+## Contratos
 
-### Generate genesis JSON
+### Autorização — `contracts/auth/`
 
-Compile the contracts first, then provide one or more validator mappings and account
-roles. Every validator's mapped account is automatically added as a `Trustee`.
-Accounts provided with `--account` cannot also be validator addresses or validator
-accounts.
+- **RoleControl**: atribui, consulta e revoga os papéis `TRUSTEE`, `ENDORSER` e
+  `STEWARD`. Trustees podem gerenciar os papéis e a contagem de contas por papel é
+  mantida para as regras de aprovação de upgrades.
+- **AccountControl**: decide se uma transação é permitida. Exige papel Trustee
+  para implantar contratos; transações para contratos existentes são aceitas por
+  esta regra.
 
-```shell
+### Rede — `contracts/network/`
+
+- **ValidatorControl**: mantém a lista de validadores e associa cada endereço de
+  validador à conta responsável. A inclusão e remoção exigem papel Steward; não
+  permite remover o último validador.
+
+### Upgrades — `contracts/upgrade/`
+
+- **UpgradeControl**: controla propostas de upgrade para implementações UUPS.
+  Trustees propõem e aprovam upgrades; é necessário atingir o quórum configurado
+  no contrato (60% dos Trustees).
+- **ControlledUpgradeable**: base compartilhada que autoriza upgrades através do
+  UpgradeControl.
+
+### Identidade — `contracts/did/`
+
+- **IndyDidRegistry**: cria, atualiza, desativa e resolve documentos DID
+  `did:indybesu`. Suporta operações assinadas pelo proprietário, submetidas por
+  contas autorizadas.
+- **EthereumExtDidRegistry**: estende o registro ERC-1056 (`EthereumDIDRegistry`)
+  com suporte a proxy UUPS.
+- **UniversalDidResolver**: resolve documentos `did:indybesu` e metadados para
+  `did:indybesu` e `did:ethr`.
+- **DidUtils**: utilitários internos para analisar DIDs e converter identificadores.
+
+### AnonCreds — `contracts/anoncreds/`
+
+- **SchemaRegistry**: registra e resolve schemas.
+- **CredentialDefinitionRegistry**: registra definições de credenciais associadas
+  a um schema existente.
+- **RevocationRegistry**: registra definições de revogação associadas a uma
+  Credential Definition e publica entradas de revogação.
+- **AnoncredsRegistry**: lógica compartilhada de validação de emissor, identidade
+  e permissões.
+- Os arquivos `*Types.sol`, `*Interface.sol` e `AnoncredsErrors.sol` declaram
+  estruturas, interfaces e erros usados pelos registros.
+
+### Migração — `contracts/migration/`
+
+- **LegacyMappingRegistry**: mapeia identificadores DID e recursos do formato
+  legado Indy/Sov para os identificadores atuais. A validação da assinatura
+  Ed25519 está indicada no contrato como trabalho futuro.
+
+### Utilitários e contratos de teste
+
+- `contracts/utils/`: utilitários internos de Base58, strings e erros.
+- `contracts/testonly/`: contratos de apoio aos testes, incluindo implementações
+  de exemplo para validar upgrades.
+
+## Scripts de setup e operação
+
+### Gerar o JSON de genesis
+
+O executável `indy-besu-generate-genesis` compõe os trechos de storage e bytecode
+dos contratos no formato de genesis esperado pela rede. Os endereços e as
+referências aos artifacts dos contratos vêm de `references.json`; compile o
+projeto antes de gerar o arquivo.
+
+```sh
 npx hardhat build
 npx indy-besu-generate-genesis \
   --validator 0x93917cadbace5dfce132b991732c6cda9bcc5b8a:0xed9d02e382b34818e88b88a309c7fe71e65f419d \
@@ -47,31 +102,52 @@ npx indy-besu-generate-genesis \
   --output ./ContractsGenesis.json
 ```
 
-`--validator` and `--account` can be repeated. Roles are `Trustee`, `Endorser`,
-and `Steward`. Use `--help` to see the command syntax.
+Argumentos:
 
-### Make a deployment to Sepolia
+- `--validator <endereço-do-validador>:<endereço-da-conta>`: adiciona um validador
+  e sua conta associada. Pode ser repetido.
+- `--account <endereço>:<papel>`: adiciona uma conta com papel `Trustee`,
+  `Endorser` ou `Steward`. Pode ser repetido.
+- `--output <arquivo.json>`: caminho do JSON gerado.
+- `--help`: mostra a ajuda do comando.
 
-This project includes an example Ignition module to deploy the contract. You can deploy this module to a locally simulated chain or to Sepolia.
+Cada conta associada a um validador é incluída automaticamente em `accounts` com
+papel Trustee. Essas contas e os endereços de validador não podem ser informados
+novamente por `--account`. A lista `validators` contém cada validador e sua conta
+associada.
 
-To run the deployment to a local chain:
+### Transação de exemplo na rede OP simulada
 
-```shell
-npx hardhat ignition deploy ignition/modules/Counter.ts
+O script `scripts/send-op-tx.ts` cria uma conexão local `hardhatOp`, estima o
+componente de gas L1 e envia uma transação de 1 wei da conta de teste para ela
+mesma:
+
+```sh
+npx hardhat run scripts/send-op-tx.ts
 ```
 
-To run the deployment to Sepolia, you need an account with funds to send the transaction. The provided Hardhat configuration includes a Configuration Variable called `SEPOLIA_PRIVATE_KEY`, which you can use to set the private key of the account you want to use.
+## Testes
 
-You can set the `SEPOLIA_PRIVATE_KEY` variable using the `hardhat-keystore` plugin or by setting it as an environment variable.
+Execute a suíte completa:
 
-To set the `SEPOLIA_PRIVATE_KEY` config variable using `hardhat-keystore`:
-
-```shell
-npx hardhat keystore set SEPOLIA_PRIVATE_KEY
+```sh
+npx hardhat test
 ```
 
-After setting the variable, you can run the deployment with the Sepolia network:
+Ou execute apenas os testes TypeScript com `node:test`:
 
-```shell
-npx hardhat ignition deploy --network sepolia ignition/modules/Counter.ts
+```sh
+npx hardhat test nodejs
 ```
+
+## Configuração de redes Hardhat
+
+O arquivo `hardhat.config.ts` define duas redes locais simuladas:
+
+- `hardhatMainnet`: simulação EVM L1.
+- `hardhatOp`: simulação com tipo de chain OP.
+
+Também há uma configuração HTTP para Sepolia, que requer as variáveis
+`SEPOLIA_RPC_URL` e `SEPOLIA_PRIVATE_KEY`. Esta configuração fornece a conexão
+de rede; os módulos de exemplo em `ignition/modules/` não representam o deploy
+do conjunto de contratos do projeto.
