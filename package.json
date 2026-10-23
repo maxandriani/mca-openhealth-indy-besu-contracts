@@ -1,10 +1,15 @@
 {
-  "name": "mca-openhealth-besu-contracts",
+  "name": "mca-openhealth-indy-besu-contracts",
   "version": "1.0.0",
   "type": "module",
+  "bin": {
+    "indy-besu-generate-genesis": "./scripts/genesis/generate.ts"
+  },
   "devDependencies": {
     "@nomicfoundation/hardhat-ignition": "^3.1.9",
     "@nomicfoundation/hardhat-toolbox-viem": "^5.0.7",
+    "@types/bn.js": "^5.2.0",
+    "@types/fs-extra": "^11.0.4",
     "@types/node": "^22.20.5",
     "forge-std": "github:foundry-rs/forge-std#v1.16.2",
     "hardhat": "^3.21.0",
@@ -13,6 +18,11 @@
   },
   "dependencies": {
     "@dk1a/solidity-stringutils": "^0.3.3",
-    "@openzeppelin/contracts": "^5.6.1"
+    "@openzeppelin/contracts": "^5.6.1",
+    "bn.js": "^5.2.5",
+    "fs-extra": "^11.4.1",
+    "solc": "^0.8.38",
+    "tsx": "^4.23.15",
+    "web3-utils": "^4.3.3"
   }
 }

@@ -30,6 +30,26 @@ npx hardhat test solidity
 npx hardhat test nodejs
 ```
 
+### Generate genesis JSON
+
+Compile the contracts first, then provide one or more validator mappings and account
+roles. Every validator's mapped account is automatically added as a `Trustee`.
+Accounts provided with `--account` cannot also be validator addresses or validator
+accounts.
+
+```shell
+npx hardhat build
+npx indy-besu-generate-genesis \
+  --validator 0x93917cadbace5dfce132b991732c6cda9bcc5b8a:0xed9d02e382b34818e88b88a309c7fe71e65f419d \
+  --validator 0x27a97c9aaf04f18f3014c32e036dd0ac76da5f18:0xb30f304642de3fee4365ed5cd06ea2e69d3fd0ca \
+  --account 0x0000000000000000000000000000000000000001:Endorser \
+  --account 0x0000000000000000000000000000000000000002:Steward \
+  --output ./ContractsGenesis.json
+```
+
+`--validator` and `--account` can be repeated. Roles are `Trustee`, `Endorser`,
+and `Steward`. Use `--help` to see the command syntax.
+
 ### Make a deployment to Sepolia
 
 This project includes an example Ignition module to deploy the contract. You can deploy this module to a locally simulated chain or to Sepolia.

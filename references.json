@@ -1,0 +1,46 @@
+{
+    "validatorControl": {
+        "specPath": "artifacts/contracts/network/ValidatorControl.sol/ValidatorControl.json",
+        "address": "0x0000000000000000000000000000000000007777"
+    },
+    "accountControl": {
+        "specPath": "artifacts/contracts/auth/AccountControl.sol/AccountControl.json",
+        "address": "0x0000000000000000000000000000000000008888"
+    },
+    "roleControl": {
+        "specPath": "artifacts/contracts/auth/RoleControl.sol/RoleControl.json",
+        "address": "0x0000000000000000000000000000000000006666"
+    },
+    "upgradeControl": {
+        "specPath": "artifacts/contracts/upgrade/UpgradeControl.sol/UpgradeControl.json",
+        "address": "0x0000000000000000000000000000000000009999"
+    },
+    "ethereumDidRegistry": {
+        "specPath": "artifacts/contracts/did/EthereumExtDidRegistry.sol/EthereumExtDidRegistry.json",
+        "address": "0x0000000000000000000000000000000000018888"
+    },
+    "indyDidRegistry": {
+        "specPath": "artifacts/contracts/did/IndyDidRegistry.sol/IndyDidRegistry.json",
+        "address": "0x0000000000000000000000000000000000003333"
+    },
+    "schemaRegistry": {
+        "specPath": "artifacts/contracts/anoncreds/SchemaRegistry.sol/SchemaRegistry.json",
+        "address": "0x0000000000000000000000000000000000005555"
+    },
+    "credentialDefinitionRegistry": {
+        "specPath": "artifacts/contracts/anoncreds/CredentialDefinitionRegistry.sol/CredentialDefinitionRegistry.json",
+        "address": "0x0000000000000000000000000000000000004444"
+    },
+    "legacyMapping": {
+        "specPath": "artifacts/contracts/migration/LegacyMappingRegistry.sol/LegacyMappingRegistry.json",
+        "address": "0x0000000000000000000000000000000000017777"
+    },
+    "universalDidResolver": {
+        "specPath": "artifacts/contracts/migration/UniversalDidResolver.sol/UniversalDidResolver.json",
+        "address": "0x000000000000000000000000000000000019999"
+    },
+    "revocationRegistry": {
+        "specPath": "artifacts/contracts/anoncreds/RevocationRegistry.sol/RevocationRegistry.json",
+        "address": "0x0000000000000000000000000000000000002222"
+    }
+}
