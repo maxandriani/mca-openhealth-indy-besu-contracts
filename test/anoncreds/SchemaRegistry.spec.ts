@@ -16,7 +16,7 @@ async function deployFixture(viem: Awaited<ReturnType<typeof network.create>>['v
   const stack = await deploySchemaStack(viem)
   const { trustee, trustee2, noRole } = stack.accounts
   const identity = trustee.account.address
-  const issuerId = `did:indybesu:mainnet:${identity}`
+  const issuerId = `did:indy:besu:mainnet:${identity}`
   await stack.indyDidRegistry.write.createDid(
     [identity, makeDidDocument(issuerId)],
     { account: trustee.account },
@@ -65,7 +65,7 @@ describe('SchemaRegistry', async function () {
 
   it('rejects unknown and deactivated issuers', async function () {
     const { viem, schemaRegistry, indyDidRegistry, trustee, noRole, identity, issuerId } = fixture
-    const unknownIssuerId = `did:indybesu:mainnet:${noRole.account.address}`
+    const unknownIssuerId = `did:indy:besu:mainnet:${noRole.account.address}`
     const unknownSchema = schemaData(unknownIssuerId)
     await viem.assertions.revertWithCustomErrorWithArgs(
       schemaRegistry.write.createSchema([identity, unknownSchema.id, unknownIssuerId, unknownSchema.data], {
@@ -147,7 +147,7 @@ describe('SchemaRegistry', async function () {
 
   it('supports signed schema creation for Indy Besu DIDs', async function () {
     const { schemaRegistry, indyDidRegistry, trustee } = fixture
-    const issuerId = `did:indybesu:${testActor.address}`
+    const issuerId = `did:indy:besu:${testActor.address}`
     const document = makeDidDocument(issuerId)
     const didSignature = await signEndorsement(
       indyDidRegistry.address,

@@ -61,7 +61,7 @@ async function deployFixture() {
   ])
 
   const issuerAddress = trustee.account.address
-  const issuerId = `did:indybesu:mainnet:${issuerAddress}`
+  const issuerId = `did:indy:besu:mainnet:${issuerAddress}`
   const didDocument = toHex(stringToBytes(JSON.stringify({ id: issuerId })))
   await indyDidRegistry.write.createDid([issuerAddress, didDocument], { account: trustee.account })
 
@@ -87,7 +87,7 @@ async function deployFixture() {
 }
 
 function schemaData(name: string) {
-  const id = keccak256(stringToBytes(`did:indybesu:anoncreds/v0/SCHEMA/${name}/1.0.0`))
+  const id = keccak256(stringToBytes(`did:indy:besu:anoncreds/v0/SCHEMA/${name}/1.0.0`))
   const data = toHex(stringToBytes(JSON.stringify({ name, version: '1.0.0', attrNames: ['name'] })))
   return { id, data }
 }
@@ -209,7 +209,7 @@ describe('CredentialDefinitionRegistry', async function () {
 
     it('reverts when the issuer does not exist', async function () {
       const { viem, credentialDefinitionRegistry, trustee, noRole, schemaId } = fixture
-      const unknownIssuerId = `did:indybesu:mainnet:${noRole.account.address}`
+      const unknownIssuerId = `did:indy:besu:mainnet:${noRole.account.address}`
       const { id, data } = credentialDefinitionData(unknownIssuerId, schemaId)
 
       await viem.assertions.revertWithCustomErrorWithArgs(
@@ -258,7 +258,7 @@ describe('CredentialDefinitionRegistry', async function () {
 
     it('reverts when the sender does not own the issuer DID', async function () {
       const { viem, credentialDefinitionRegistry, indyDidRegistry, trustee2, issuerId, schemaId } = fixture
-      const otherIssuerId = `did:indybesu:mainnet:${trustee2.account.address}`
+      const otherIssuerId = `did:indy:besu:mainnet:${trustee2.account.address}`
       const otherDocument = toHex(stringToBytes(JSON.stringify({ id: otherIssuerId })))
       await indyDidRegistry.write.createDid([trustee2.account.address, otherDocument], {
         account: trustee2.account,
@@ -374,9 +374,9 @@ describe('CredentialDefinitionRegistry', async function () {
       assert.equal(result.credDef, data)
     })
 
-    it('endorses and resolves a Credential Definition with did:indybesu', async function () {
+    it('endorses and resolves a Credential Definition with did:indy:besu', async function () {
       const { credentialDefinitionRegistry, schemaRegistry, indyDidRegistry, trustee } = fixture
-      const issuerId = `did:indybesu:${testActor.address}`
+      const issuerId = `did:indy:besu:${testActor.address}`
       const didDocument = toHex(stringToBytes(JSON.stringify({ id: issuerId })))
       const didSignature = await signCreateDid(indyDidRegistry.address, testActor.address, didDocument)
       await indyDidRegistry.write.createDidSigned(

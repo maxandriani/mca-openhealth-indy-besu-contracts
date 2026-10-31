@@ -19,7 +19,7 @@ async function deployFixture(viem: Awaited<ReturnType<typeof network.create>>['v
   const stack = await deployLegacyStack(viem)
   const { trustee } = stack.accounts
   const identity = trustee.account.address
-  const newDid = `did:indybesu:${identity}`
+  const newDid = `did:indy:besu:${identity}`
   await stack.indyDidRegistry.write.createDid(
     [identity, toHex(stringToBytes(JSON.stringify({ id: newDid })))],
     { account: trustee.account },

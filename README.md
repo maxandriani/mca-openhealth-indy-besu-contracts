@@ -51,13 +51,26 @@ A compilação gera os artifacts consumidos pelos testes e pelo gerador de genes
 ### Identidade — `contracts/did/`
 
 - **IndyDidRegistry**: cria, atualiza, desativa e resolve documentos DID
-  `did:indybesu`. Suporta operações assinadas pelo proprietário, submetidas por
+  `did:indy:besu`. Suporta operações assinadas pelo proprietário, submetidas por
   contas autorizadas.
 - **EthereumExtDidRegistry**: estende o registro ERC-1056 (`EthereumDIDRegistry`)
   com suporte a proxy UUPS.
-- **UniversalDidResolver**: resolve documentos `did:indybesu` e metadados para
-  `did:indybesu` e `did:ethr`.
+- **UniversalDidResolver**: resolve documentos `did:indy:besu` e metadados para
+  `did:indy:besu` e `did:ethr`.
 - **DidUtils**: utilitários internos para analisar DIDs e converter identificadores.
+
+#### Formatos de DID suportados
+
+- `did:ethr(:<network>)?:<ethereum-address|ethereum-public-key>`
+- `did:indy:besu(:<network>)?:<ethereum-address|ethereum-public-key>`
+
+Observações:
+
+- `<network>` é opcional (por exemplo `mainnet`, `testnet`, `sepolia`).
+- `<ethereum-address>` usa formato hexadecimal com prefixo `0x`.
+- `<ethereum-public-key>` aceita chave pública em hexadecimal (com prefixo `0x`) e
+  é convertida para endereço Ethereum no resolver.
+- O formato legado `did:indybesu` não é aceito.
 
 ### AnonCreds — `contracts/anoncreds/`
 
@@ -138,6 +151,12 @@ Ou execute apenas os testes TypeScript com `node:test`:
 
 ```sh
 npx hardhat test nodejs
+```
+
+Para executar apenas os testes do resolvedor universal DID:
+
+```sh
+npx hardhat test nodejs test/did/UniversalDidResolver.spec.ts
 ```
 
 ## Configuração de redes Hardhat

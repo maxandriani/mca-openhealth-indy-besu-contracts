@@ -7,13 +7,13 @@ import { UnsupportedOperation } from "../utils/Errors.sol";
 import { IncorrectDid } from "./DidErrors.sol";
 import { DidMetadata } from "./DidTypes.sol";
 import { DidUtils, ParsedDid } from "./DidUtils.sol";
-import { EthereumExtDidRegistry } from "./EthereumExtDidRegistry.sol";
+import { EthereumDIDRegistry } from "./EthereumDIDRegistry.sol";
 import { IndyDidRegistryInterface } from "./IndyDidRegistryInterface.sol";
 import { UniversalDidResolverInterface } from "./UniversalDidResolverInterface.sol";
 
 contract UniversalDidResolver is UniversalDidResolverInterface, ControlledUpgradeable {
     IndyDidRegistryInterface internal _indyDidRegistry;
-    EthereumExtDidRegistry internal _ethereumDIDRegistry;
+    EthereumDIDRegistry internal _ethereumDIDRegistry;
 
     function initialize(
         address upgradeControlAddress,
@@ -22,7 +22,7 @@ contract UniversalDidResolver is UniversalDidResolverInterface, ControlledUpgrad
     ) public reinitializer(1) {
         _initializeUpgradeControl(upgradeControlAddress);
         _indyDidRegistry = IndyDidRegistryInterface(indyDidRegistry);
-        _ethereumDIDRegistry = EthereumExtDidRegistry(ethereumDIDRegistryAddress);
+        _ethereumDIDRegistry = EthereumDIDRegistry(ethereumDIDRegistryAddress);
     }
 
     /// @inheritdoc UniversalDidResolverInterface

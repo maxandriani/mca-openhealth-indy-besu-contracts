@@ -133,7 +133,7 @@ describe('RevocationRegistry', async function () {
       'NotIdentityOwner',
     )
 
-    const otherIssuerId = `did:indybesu:${identity}`
+    const otherIssuerId = `did:indy:besu:${identity}`
     await indyDidRegistry.write.createDid(
       [identity, bytes(JSON.stringify({ id: otherIssuerId }))],
       { account: trustee.account },

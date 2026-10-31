@@ -11,7 +11,7 @@ async function deployFixture(viem: Awaited<ReturnType<typeof network.create>>['v
   const didStack = await deployDidStack(viem)
   const { trustee, trustee2, trustee3, noRole } = didStack.accounts
   const identity = trustee.account.address
-  const did = `did:indybesu:testnet:${identity}`
+  const did = `did:indy:besu:testnet:${identity}`
   return { ...didStack, trustee, trustee2, trustee3, noRole, identity, did, document: makeDidDocument(did) }
 }
 
@@ -50,7 +50,7 @@ describe('IndyDidRegistry', async function () {
 
   it('requires a role to create DID records', async function () {
     const { viem, indyDidRegistry, roleControl, noRole } = fixture
-    const document = makeDidDocument(`did:indybesu:${noRole.account.address}`)
+    const document = makeDidDocument(`did:indy:besu:${noRole.account.address}`)
     await viem.assertions.revertWithCustomErrorWithArgs(
       indyDidRegistry.write.createDid([noRole.account.address, document], {
         account: noRole.account,
@@ -64,7 +64,7 @@ describe('IndyDidRegistry', async function () {
   it('allows the identity owner to update and deactivate after their role is revoked', async function () {
     const { indyDidRegistry, roleControl, trustee, trustee3 } = fixture
     const identity = trustee3.account.address
-    const did = `did:indybesu:testnet:${identity}`
+    const did = `did:indy:besu:testnet:${identity}`
     await indyDidRegistry.write.createDid([identity, makeDidDocument(did)], { account: trustee3.account })
     await roleControl.write.revokeRole([1, identity], { account: trustee.account })
 
@@ -84,7 +84,7 @@ describe('IndyDidRegistry', async function () {
   it('allows the owner to update their DID document', async function () {
     const { indyDidRegistry, trustee, identity, document } = fixture
     await indyDidRegistry.write.createDid([identity, document], { account: trustee.account })
-    const updatedDocument = makeDidDocument('did:indybesu:updated')
+    const updatedDocument = makeDidDocument('did:indy:besu:updated')
     await indyDidRegistry.write.updateDid([identity, updatedDocument], { account: trustee.account })
     assert.equal((await indyDidRegistry.read.resolveDid([identity])).document, updatedDocument)
   })
@@ -142,7 +142,7 @@ describe('IndyDidRegistry', async function () {
   it('creates a DID from an off-chain identity signature', async function () {
     const { indyDidRegistry, trustee, identity } = fixture
     const signedIdentity = '0x2036C6CD85692F0Fb2C26E6c6B2ECed9e4478Dfd'
-    const did = `did:indybesu:testnet:${signedIdentity}`
+    const did = `did:indy:besu:testnet:${signedIdentity}`
     const document = makeDidDocument(did)
     const signature = await signEndorsement(
       indyDidRegistry.address,

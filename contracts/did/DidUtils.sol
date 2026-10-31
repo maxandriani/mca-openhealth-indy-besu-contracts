@@ -6,7 +6,7 @@ import { IncorrectDid } from "./DidErrors.sol";
 import { StringUtils } from "../utils/StringUtils.sol";
 
 string constant DID_ETHR_METHOD = "ethr";
-string constant DID_INDY_BESU_METHOD = "indybesu";
+string constant DID_INDY_BESU_METHOD = "indy:besu";
 
 struct ParsedDid {
     string method;
@@ -18,7 +18,11 @@ using { toSlice } for string;
 library DidUtils {
     string private constant _DID_PREFIX = "did";
     string private constant _DID_DELIMETER = ":";
-    uint16 private constant _ADDRESS_HEX_STRING_LENGTH = 22;
+    string private constant _DID_INDY_PREFIX = "indy";
+    string private constant _DID_BESU_PREFIX = "besu";
+    uint16 private constant _ADDRESS_HEX_STRING_LENGTH = 42;
+    uint16 private constant _PUBLIC_KEY_64_HEX_STRING_LENGTH = 130;
+    uint16 private constant _PUBLIC_KEY_65_HEX_STRING_LENGTH = 132;
 
     /**
      * @dev Parses a DID string and returns its components.
@@ -40,13 +44,47 @@ library DidUtils {
         if (!found) revert IncorrectDid(did);
 
         ParsedDid memory parsedDid;
-        parsedDid.method = component.toString();
+        if (component.eq(DID_ETHR_METHOD.toSlice())) {
+            parsedDid.method = DID_ETHR_METHOD;
+        } else if (component.eq(_DID_INDY_PREFIX.toSlice())) {
+            (found, component, didSlice) = didSlice.splitOnce(delimeterSlice);
+            if (!found || !component.eq(_DID_BESU_PREFIX.toSlice())) revert IncorrectDid(did);
 
-        // Extract the DID identifier.
-        (, , component) = didSlice.rsplitOnce(_DID_DELIMETER.toSlice());
-        parsedDid.identifier = component.toString();
+            parsedDid.method = DID_INDY_BESU_METHOD;
+        } else {
+            revert IncorrectDid(did);
+        }
+
+        parsedDid.identifier = _parseDidIdentifier(didSlice, delimeterSlice, did);
 
         return parsedDid;
+    }
+
+    function _parseDidIdentifier(
+        StrSlice didSlice,
+        StrSlice delimeterSlice,
+        string memory did
+    ) private view returns (string memory identifier) {
+        bool found;
+        StrSlice component;
+
+        // Format without network: <identifier>
+        // Format with network: <network>:<identifier>
+        (found, component, didSlice) = didSlice.splitOnce(delimeterSlice);
+        if (!found) {
+            if (component.isEmpty()) revert IncorrectDid(did);
+
+            return component.toString();
+        }
+
+        // Network component must not be empty.
+        if (component.isEmpty()) revert IncorrectDid(did);
+
+        // Identifier component must be the last segment and not empty.
+        (found, component, ) = didSlice.splitOnce(delimeterSlice);
+        if (found || component.isEmpty()) revert IncorrectDid(did);
+
+        return component.toString();
     }
 
     /**
@@ -55,11 +93,32 @@ library DidUtils {
      * @return The Ethereum address derived from the identifier, or the zero address if the identifier is incorrect.
      */
     function convertEthereumIdentifierToAddress(string memory identifier) internal view returns (address) {
-        if (!(StringUtils.length(identifier) != _ADDRESS_HEX_STRING_LENGTH)) return address(0);
+        uint256 identifierLength = StringUtils.length(identifier);
+        if (
+            identifierLength != _ADDRESS_HEX_STRING_LENGTH && identifierLength != _PUBLIC_KEY_64_HEX_STRING_LENGTH
+                && identifierLength != _PUBLIC_KEY_65_HEX_STRING_LENGTH
+        ) {
+            return address(0);
+        }
 
         bytes memory identifierBytes = StringUtils.hexToBytes(identifier);
+        if (identifierBytes.length == 20) {
+            return address(uint160(bytes20(identifierBytes)));
+        }
 
-        return address(uint160(bytes20(identifierBytes)));
+        if (identifierBytes.length == 64) {
+            return address(uint160(uint256(keccak256(identifierBytes))));
+        }
+
+        if (identifierBytes.length == 65 && identifierBytes[0] == 0x04) {
+            bytes32 pubKeyHash;
+            assembly {
+                pubKeyHash := keccak256(add(identifierBytes, 0x21), 64)
+            }
+            return address(uint160(uint256(pubKeyHash)));
+        }
+
+        return address(0);
     }
 
     /**
