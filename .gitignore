@@ -1,4 +1,8 @@
 .DS_Store
+publish/artifacts/*
+publish/abi/*
+publish/contracts/*
+publish/scripts/*
 
 # Node modules
 /node_modules

@@ -1,0 +1,26 @@
+{
+  "name": "indy-besu-contracts",
+  "version": "0.1.0",
+  "type": "module",
+  "bin": {
+    "indy-besu-generate-genesis": "./scripts/genesis/generate.js"
+  },
+  "files": [
+    "**/*.sol",
+    "scripts/**/*.js",
+    "abi/**/*.json"
+  ],
+  "peerDependencies": {
+    "@dk1a/solidity-stringutils": "^0.3.3",
+    "@openzeppelin/contracts": "^5.6.1"
+  },
+  "author": "Max Andriani <max.andriani@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/maxandriani/mca-openhealth-indy-besu-contracts.git"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

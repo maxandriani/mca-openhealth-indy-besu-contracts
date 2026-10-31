@@ -1,0 +1,58 @@
+name: Publish to npm
+
+env:
+  NODE_VERSION: '26.12.0'
+
+on:
+  create:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  run_hardhat_tests:
+    if: ${{ github.event.ref_type == 'tag' }}
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - run: npm ci
+      - run: npx hardhat test
+
+  pack_artifacts:
+    if: ${{ github.event.ref_type == 'tag' }}
+    runs-on: ubuntu-24.04
+    needs:
+      - run_hardhat_tests
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - run: npm ci
+      - run: npx hardhat build
+        env:
+          COMPILE_MODE: production
+      - run: npx tsc
+      - run: mkdir -p ./publish/abi ./publish/contracts ./publish/scripts
+      - run: cp -r artifacts/* ./publish/abi
+      - run: cp -r contracts/* ./publish/contracts
+      - run: cp -r dist/scripts/* ./publish/scripts
+      - run: cp README.md ./publish/README.md
+      - run: npm version --allow-same-version --git-tag-version false ${{ github.ref_name }}
+        working-directory: ./publish
+      - run: npm stage publish
+        working-directory: ./publish
