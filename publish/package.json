@@ -1,6 +1,6 @@
 {
-  "name": "indy-besu-contracts",
-  "version": "0.1.0",
+  "name": "@maxandriani/indy-besu-contracts",
+  "version": "0.0.1",
   "type": "module",
   "bin": {
     "indy-besu-generate-genesis": "./scripts/genesis/generate.js"
